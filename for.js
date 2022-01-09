@@ -5,6 +5,7 @@
 //
 // TODO: it might make sense to split up the remote/local code, they might
 //       not share much in common, so long as I can put the scan stuff in a library
+import { execMaxThreads } from "libmaxthreads.js";
 export async function main(ns) {
     if (ns.args.length < 2) {
         ns.alert(
@@ -87,7 +88,7 @@ async function handleHost(ns, is_remote, exec_args, host_arg_index, me, host, st
         exec_args[host_arg_index] = host;
     }
     if (is_remote) {
-        const thread_count = execScript(ns, exec_args, host);
+        const thread_count = execMaxThreads(ns, exec_args[0], host, ...exec_args.slice(1));
         if (thread_count > 0) {
             state.success_count += 1;
             state.log += host + ": SUCCESS (" + thread_count + ")\n";
@@ -115,18 +116,4 @@ async function execLocal(ns, exec_args) {
         await ns.sleep(20);
     }
     return [0, 0];
-}
-
-function execScript(ns, exec_args, host) {
-    const script_args = exec_args.slice(1);
-    const ram_pair = ns.getServerRam(host);
-    const ram_total = ram_pair[0];
-    const MIN_SCRIPT_RAM = 1.6;
-    for (var thread_count = Math.floor(ram_total / MIN_SCRIPT_RAM); thread_count != 0; thread_count -= 1) {
-        const pid = ns.exec(exec_args[0], host, thread_count, ...script_args);
-        if (pid != 0) {
-            return thread_count;
-        }
-    }
-    return 0;
 }
