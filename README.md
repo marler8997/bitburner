@@ -8,7 +8,8 @@ run scan.js
 run for.js local nuke5.js $host
 
 # start hacking
-run for.js remote hack.js
+run smarthack.js
+# old one: run for.js remote hack.js
 
 # kill all scripts
 run for.js local killall.js $host
